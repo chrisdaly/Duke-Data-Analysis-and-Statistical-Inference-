@@ -1,0 +1,117 @@
+---
+title: "Do voters with higher income favour a republican candiate?"
+author: "Chris Daly"
+date: "19/10/2014"
+output:
+  html_document:
+    theme: cerulean
+  pdf_document: default
+---
+
+
+<!-- Enter the code required to load your data in the space below. The data will be loaded but the line of code won't show up in your write up (echo=FALSE) in order to save space-->
+
+### Introduction:
+
+In this report data taken from the American National Elections Study (ANES) will be analyzed in order to determine if there is a correlation between a voter's income and who they vote for in a Presidential election. Evidence of such a correlation would help parties see who their main demographics and as a result what kind of issues they should focus on. It could also benefit statisticians that predict who will win an election based on small and often somewhat biased sample sizes by incorporating each sample's case's income group.
+
+### Data:
+
+The data comes from the ANES which consists of a survey of random voters in the United States from every state, before and after every presidential election. There are a total of 5,914 cases and 205 variables in this dataset, where each case represents a person surveyed. 
+
+For the purposes of this report, two variables were of interest: Candidate voted for ("presvote2012" - categorical - Barack Obama, Mitt Romney, Other) and Income $/year ("incgroup_prepost"" - numerical - continuous). The income was used as the explanatory variable and the vote was considered the response variable. 
+
+This report is an observational study as the data involved is retrospective and was collected in such a way that did not interfere with the results. The population of interest is the entire voting population in the USA presidential elections. 
+
+Since this report is an observational study, as opposed to an experiment, only correlations can be found. However, any strong association between income and vote would be useful to infer.
+
+
+These variables were extracted and made into a separate data frame. A number of null values were reported and as a result these cases were removed from the analysis. Some bias may come from areas with a really high cost of living which would lead to artificially high relative income and, for example, push a mid income voter into a high income range.
+
+
+```{r}
+load(url("http://bit.ly/dasi_anes_data"))
+vote <- anes$presvote2012_x
+income <- anes$incgroup_prepost
+DF <- data.frame(vote, income)
+DF <- DF[complete.cases(DF), ]
+```
+
+Furthermore, the income variable had too many income levels (28). The data was re-leveled to be more concise and to smooth out the variations that occur from large bin widths.
+
+```{r}
+levels(DF$income) <- c("<5", "<15", "<15", "<15", "<20", 
+                        "<20", "<30", "<30", "<30", "<30", 
+                        "<40", "<40", "<60", "<60", "<60", 
+                        "<80", "<80", "<80", "<80", "<100", 
+                        "<100", "<250", "<250", "<250", "<250", 
+                        "<250", "<250", ">250")
+
+```
+
+The cleaned and transformed data frame was then made into a table.
+```{r}
+a <- table(DF$income, DF$vote)
+
+```
+
+
+### Exploratory data analysis:
+
+The following table was the basis of the calculations and plots.
+
+```{r, echo = FALSE}
+head(a)
+```
+
+A mosaic plot was made of the table to get a sense of the relationships between groups and candidates the groups voted for. A relationship was observed as the proportion of Republican voters increased as the voter income group increased.
+
+```{r}
+mosaicplot(a, xlab = "Voter Income group ($1000)", 
+           ylab = "Candidate voted for", main = "Voter Income vs Candidate for USA 2012", 
+           col = c("#FF3333", "#3333FF", "#33CC00"))
+```
+
+### Inference:
+The hypothese for this report are as follows. 
+
+$H_0: Response\ and\ explanatory\ variable\ are\ independent.$  
+$H_A: Response\ and\ explanatory\ variable\ are\ dependent.$ 
+
+Pearson's Chi-squared Indepence Test was chosen for this anaylsis as the data contains two categorical variables. The following conditions for this test were met:
+
+- Sample observations were independent and less than 10% of the population. 
+- The sample was randomly surveyed. 
+- Each case is a distinct vote and a distinct income group and can therefore only contribute to one cell. 
+
+However, there was one cell that did not meet the 5 expected cases condition and therefore a p-value was simulated based on simulations rather than theoretically. A generic inference function was used for this purpose with parameters set to hypothesis test and simulation.
+
+
+```{r}
+source("http://bit.ly/dasi_inference")
+
+inference(y = droplevels(DF$income), x = DF$vote, est = "proportion", 
+          type = "ht", alternative = "greater", method = "simulation", 
+          eda_plot = FALSE, inf_plot = FALSE, sum_stats = TRUE)
+
+```
+
+A miniscule p-value of 9.999e-05 was obtained from the simulations meaning that it is extremely unlikely to observe such a trend between a voter's candidate preference and the voters income given that those two variables are independent. Thus we reject the null hypothesis in favour of the alternative.
+
+### Conclusion:
+
+This report has concluded through statistical inference on a ANES dataset that a voter's income does indeed have some influence on what party they are more likely to vote for in a presidential election. There is a noticeable increase in the proportion of  voters who side with the republican party as their income increases. 
+
+ANES provides a wealth of information about the population and, to further support these findings, it is recommended that analysis be carried out on ANES data for other election years with a view to incorporating more variables such as a voter's opinion on the state of the current president
+
+### References:
+- ANES dataset: http://bit.ly/dasi_anes_data 
+
+- ANES codebook: https://d396qusza40orc.cloudfront.net/statistics%2Fproject%2Fanes1.html 
+
+- Inference function: http://bit.ly/dasi_inference 
+
+### Appendix
+```{r}
+head(DF, 40)
+```

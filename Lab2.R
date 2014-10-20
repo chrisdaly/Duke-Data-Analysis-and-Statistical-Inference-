@@ -17,7 +17,7 @@ sim_unfair_coin <- sample(outcomes, size = 100, replace = TRUE, prob = c(0.2, 0.
 
 outcomes <- c("H", "M")
 sim_basket <- sample(outcomes, size = 1, replace = TRUE)
-sim_basket <- sample(outcomes, size = 133, replace = TRUE, prob = c(.45, .55))
+sim_basket <- sample(outcomes, size = 133, replace = TRUE, prob = c(.45, .55))db
 
 streaks <- calc_streak(sim_basket)
 
@@ -25,3 +25,9 @@ par(mfrow = c(1, 2))
 barplot(table(kobe_streak))
 barplot(table(streaks))
 
+
+n <- 3000000
+p <- 0.00001
+k <- 35
+
+choose(n, k) * (p^k) * ((1-p)^(n-k))
